@@ -1,0 +1,181 @@
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.00.0.2552}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+%TCIDATA{Created=Thursday, December 30, 2010 11:10:39}
+%TCIDATA{LastRevised=Wednesday, March 07, 2012 10:38:10}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{Language=American English}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{lm}{Lemma}[section]
+\newtheorem{pro}{Proposition}[section]
+\newtheorem{defn}{Definition}[section]
+\newtheorem{rem}{Remark}[section]
+\numberwithin{equation}{section}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\textwidth =14.5cm \topmargin
+=-1.5cm \textheight =22.5cm \oddsidemargin=-10pt
+\parindent=0.8cm
+\renewcommand{\baselinestretch}{1.2}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{hw5}
+\author{peng zhang}
+\maketitle
+
+\section{A-4-4}
+\subsection{(a)}
+
+
+Considering the log returns of KO stock, set $r_{t}=100\log(x_{t}+1)$,where $x_{t}$  is the simple return.Using  Tgarch11.R script, we obtain the fitted TGARCH(1,1)as
+\begin{equation}
+r_{t}=1.1575+a_{t},  a_{t}=\sigma_{t}\epsilon_{t}, \epsilon_{t}\sim N(0,1)
+\end{equation}
+\begin{equation}
+\sigma_{t}^{2}=3.0349+(0.0488+0.0805N_{t-1})a_{t-1}^{2}+0.8233\sigma_{t-1}^{2}
+\end{equation}
+where the standard error of the parameter for the mean equation is 0.2284 and the standard errors of the parameters in the volatility equation are  1.052, 0.030, 0.044,and 0.038. To check the fitted model, we have $Q(10)=10.08(0.4335),Q(20)=21.528(0.3666)$for $\widetilde{a_{t}}$  the standardized residual  and $Q(10)=10.399(0.4062),Q(20)=12.734(0.8885)$ for $\widetilde{a_{t}}^{2}$ . So the model is adequate.To check the leverage effect, we the r-ratio for   $ \gamma $ is 1.795 with p-value is 0.0363. So the leverage effect is significant. 
+
+<<echo=TRUE>>=
+
+
+da=read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/m-ko-6111.txt",header=T)
+lre=log(da$ko+1)*100
+source("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/Tgarch11.R")
+m1=Tgarch11(lre)
+names(m1)
+at=m1$residuals
+sigt=m1$volatility
+resi=at/sigt
+Box.test(resi,lag=10,type='Ljung')
+Box.test(resi,lag=20,type='Ljung')
+Box.test(resi^2,lag=10,type='Ljung')
+Box.test(resi^2,lag=20,type='Ljung')
+@
+
+
+\subsection{(b)}
+Similarly, we could use Ngarch.R script to get the NGARCH(1,1) model, 
+\begin{equation}
+r_{t}=1.464+a_{t},  a_{t}=\sigma_{t}\epsilon_{t}, \epsilon_{t}\sim N(0,1)
+\end{equation}
+
+\begin{equation}
+\sigma_{t}^{2}=1.1550+0.8684\sigma_{t-1}^{2}+0.0978(a_{t-1}-0.1114\sigma_{t-1})^{2}
+\end{equation}
+The Ljung-Box statistics of the standardized residuals ($ \widetilde{a_{t}}$) and their squared series fail to reject the model. Since $Q(10)=11.103(0.3496)$ for $\widetilde{a_{t}}$  and $Q(10)=11.052(0.3535)$ for $\widetilde{a_{t}}^{2}$.
+
+<<echo=TRUE>>=
+source("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/Ngarch.R")
+m2=Ngarch(lre)
+res=m2$residuals 
+vol=m2$volatility
+resi=res/vol
+Box.test(resi,lag=10,type='Ljung')
+Box.test(resi^2,lag=10,type='Ljung')
+@
+
+
+\section{A-4-5}
+\subsection{(a)}
+For the log return, there is serial correlation.
+One way, we could find it through the ACF graph.We cound see n=1 or 2, the value is significant.
+
+<<echo=TRUE>>=
+da=read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/d-pg-0111.txt",header=T)
+lrt=log(da$rtn+1)
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=0.75\textwidth}
+<<echo=TRUE,fig=TRUE,width=4,height=4>>=
+acf(lrt,lag=12)
+@
+\label{fig:ACF}
+\end{center}
+\end{figure}
+
+The other way is trying to use the Box test.The result is $ Q(12)=54.704 $, with 
+$P-value =2.045e-07$. So we have to reject the null hypothesis to accept it has serial correlation.
+<<echo=TRUE>>=
+Box.test(lrt,lag=12,type='Ljung')
+@
+
+\subsection{(b)}
+
+Through the Pacf graph, we are trying to AR(2) model.Setting $y_{t}$ as the log return,the model is  
+\begin{equation}
+(1+0.1205B+0.0816B^{2})y_{t}=a_{t}
+\end{equation}
+By checking the acf and pacf of residuals, we could make sure this model is adequate.
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=0.75\textwidth}
+<<echo=TRUE,fig=TRUE,width=4,height=4>>=
+pacf(lrt,lag=12)
+@
+\label{fig:Pacf}
+\end{center}
+\end{figure}
+
+<<echo=TRUE>>=
+m1=arima(lrt,order=c(2,0,0),include.mean=F)
+m1
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=1\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=8>>=
+tsdiag(m1,gof=12)
+@
+\label{fig:Pacf}
+\end{center}
+\end{figure}
+
+
+
+
+\subsection{(c)}
+The Ljung-Box statistics of $z_{t}^{2}=(x_{t}-\bar{x})^{2}$, we could find $Q(12)=904$ with$P-value< 2.2e-16 $. So the test confirm strong ARCH effects.
+
+<<echo=TRUE>>=
+r1=m1$residuals
+x1=100*r1
+y1=x1-mean(x1)
+Box.test(y1^2,lag=12,type='Ljung')
+@
+
+\subsection{(d)}
+By using EGARCH(1,1) model, we obtain 
+\begin{equation}
+x_{t}=0.0276+a_{t},  a_{t}=\sigma_{t}\epsilon_{t}, \epsilon_{t}\sim N(0,1)
+\end{equation}
+
+\begin{equation}
+\ln(\sigma_{t}^{2})=-0.0622+0.0857(|\epsilon_{t}|-0.7629\epsilon_{t})+0.9832\ln(\sigma_{t-1}^{2})
+\end{equation}
+For the model checking, the Ljung-Box statistics give $Q(12)=6.4711(0.8905) $ and $Q(24)=23.266(0.5041) $ for the standardized residuals $\widetilde{a_{t}}=\frac{a_{t}}{\sigma_{t}}$ 
+and  $Q(12)=8.4412(0.7498) $ and $Q(24)=17.762(0.8144) $ for the squared series $\widetilde{a_{t}}^{2}$, where the number in parentheses denotes p-value. The model fits the data reasonably well.
+
+<<echo=TRUE>>=
+source("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/Egarch.R")
+m2=Egarch(x1)
+stresi=m2$residuals/m2$volatility
+Box.test(stresi,lag=12,type='Ljung')
+Box.test(stresi,lag=24,type='Ljung')
+Box.test(stresi^2,lag=12,type='Ljung')
+Box.test(stresi^2,lag=24,type='Ljung')
+@
+
+\end{document}

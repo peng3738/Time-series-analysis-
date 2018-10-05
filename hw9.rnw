@@ -1,0 +1,305 @@
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.00.0.2552}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+%TCIDATA{Created=Thursday, December 30, 2010 11:10:39}
+%TCIDATA{LastRevised=Wednesday, March 07, 2012 10:38:10}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{Language=American English}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{lm}{Lemma}[section]
+\newtheorem{pro}{Proposition}[section]
+\newtheorem{defn}{Definition}[section]
+\newtheorem{rem}{Remark}[section]
+\numberwithin{equation}{section}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\textwidth =14.5cm \topmargin
+=-1.5cm \textheight =22.5cm \oddsidemargin=-10pt
+\parindent=0.8cm
+\renewcommand{\baselinestretch}{1.2}
+\usepackage{Sweave}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\input{hw9-concordance}
+\title{Hw9}
+\author{Peng Zhang}
+\date{\vspace{-5ex}}
+\maketitle
+
+\section{b-1-1}
+
+
+\subsection{(a)}
+<<echo=TRUE>>=
+ca=matrix(c(0.8,0.4,-0.3,0.6),nrow=2,ncol=2,byrow=TRUE)
+sa=matrix(c(2,0.5,0.5,1),nrow=2,ncol=2,byrow=TRUE)
+library(MTS)
+m1=VARMAsim(300,arlags=c(1),phi=ca,sigma=sa)
+zt=m1$series
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=0.5\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=8>>=
+MTSplot(zt)
+@
+\label{fig:Pacf}
+\end{center}
+\end{figure}
+
+
+
+
+
+\subsection{(b)}
+
+Using  the lag l sample CCM equation  
+\begin{equation}
+\hat{\rho}_{l}=\hat{D}^{-1}\hat{\Gamma}_{l}\hat{D}^{-1}
+\end{equation}
+where 
+\begin{equation}
+\hat{\Gamma}_{l}=\frac{1}{T-1}\sum\limits_{t=l+1}^{T}(z_{t}-\hat{\mu_{z}})(z_{t-l}-\hat{\mu_{z}})^{'}
+\end{equation}
+\begin{equation}
+\hat{D}=diag\{\hat{\Upsilon}^{1/2}_{0,11},\dots,\hat{\Upsilon}^{1/2}_{0,kk}\}
+\end{equation}
+in which $\hat{\Upsilon}^{1/2}_{0,ii}$ is the $(i,i)$th element of $\hat{\Gamma}_{0}$
+we could get 
+<<dd,echo=FALSE,results=hide>>=
+cc=ccm(zt)
+options(digits=2)
+a1=cc$ccm[,1]
+a1=matrix(a1,nrow=2,ncol=2,byrow=FALSE)
+a1
+
+a2=cc$ccm[,2]
+a2=matrix(a2,nrow=2,ncol=2,byrow=FALSE)
+a2
+
+a3=cc$ccm[,3]
+a3=matrix(a3,nrow=2,ncol=2,byrow=FALSE)
+a3
+
+a4=cc$ccm[,4]
+a4=matrix(a4,nrow=2,ncol=2,byrow=FALSE)
+a4
+
+a5=cc$ccm[,5]
+a5=matrix(a5,nrow=2,ncol=2,byrow=FALSE)
+a5
+
+a6=cc$ccm[,6]
+a6=matrix(a6,nrow=2,ncol=2,byrow=FALSE)
+a6
+@
+\begin{equation}
+\hat{\rho}_{0}=
+\left[
+\begin{matrix}
+\Sexpr{round(a1[1,1],2)}& \Sexpr{round(a1[1,2],2)}\\
+ \Sexpr{round(a1[2,1],2)}& \Sexpr{round(a1[2,2],2)} 
+\end{matrix}
+\right],
+\hat{\rho}_{1}=
+\left[
+\begin{matrix}
+\Sexpr{round(a2[1,1],2)}& \Sexpr{round(a2[1,2],2)}\\
+ \Sexpr{round(a2[2,1],2)}& \Sexpr{round(a2[2,2],2)} 
+\end{matrix}
+\right],
+\hat{\rho}_{2}=
+\left[
+\begin{matrix}
+\Sexpr{round(a3[1,1],2)}& \Sexpr{round(a3[1,2],2)}\\
+ \Sexpr{round(a3[2,1],2)}& \Sexpr{round(a3[2,2],2)} 
+\end{matrix}
+\right]
+\end{equation}
+
+
+\begin{equation}
+\hat{\rho}_{3}=
+\left[
+\begin{matrix}
+\Sexpr{round(a4[1,1],2)}& \Sexpr{round(a4[1,2],2)}\\
+ \Sexpr{round(a4[2,1],2)}& \Sexpr{round(a4[2,2],2)} 
+\end{matrix}
+\right],
+\hat{\rho}_{4}=
+\left[
+\begin{matrix}
+\Sexpr{round(a5[1,1],2)}& \Sexpr{round(a5[1,2],2)}\\
+ \Sexpr{round(a5[2,1],2)}& \Sexpr{round(a5[2,2],2)} 
+\end{matrix}
+\right],
+\hat{\rho}_{5}=
+\left[
+\begin{matrix}
+\begin{matrix}
+\Sexpr{round(a6[1,1],2)}& \Sexpr{round(a6[1,2],2)}\\
+ \Sexpr{round(a6[2,1],2)}& \Sexpr{round(a6[2,2],2)} 
+\end{matrix}
+\end{matrix}
+\right]
+\end{equation}
+<<echo=TRUE>>=
+cc=ccm(zt)
+options(digits=2)
+a1=cc$ccm[,1]
+a1=matrix(a1,nrow=2,ncol=2,byrow=FALSE)
+a1
+
+a2=cc$ccm[,2]
+a2=matrix(a2,nrow=2,ncol=2,byrow=FALSE)
+a2
+
+a3=cc$ccm[,3]
+a3=matrix(a3,nrow=2,ncol=2,byrow=FALSE)
+a3
+
+a4=cc$ccm[,4]
+a4=matrix(a4,nrow=2,ncol=2,byrow=FALSE)
+a4
+
+a5=cc$ccm[,5]
+a5=matrix(a5,nrow=2,ncol=2,byrow=FALSE)
+a5
+
+a6=cc$ccm[,6]
+a6=matrix(a6,nrow=2,ncol=2,byrow=FALSE)
+a6
+@
+
+\subsection{(c)}
+
+We use the multivariate Ljung-Box test statistic to test the null hypothesis of no cross-correlations, which is defined as
+\begin{equation}
+Q_{k}(m)=T^{2}\sum\limits_{l=1}^{m}\frac{1}{T-l}tr(\hat{\Gamma}_{l}^{'}\hat{\Gamma}_{0}^{-1}\hat{\Gamma}_{l}\hat{\Gamma}_{0}^{-1})
+\end{equation}
+
+Using the cpmmand mq of the MTS package to perform the test.We can see from the graph, the null hypothesis is rejected. 
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=1\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=8>>=
+mq(zt,10)
+@
+\label{fig:p-value}
+\end{center}
+\end{figure}
+
+\newpage
+\section{b-1-4}
+
+\subsection{(a)}
+<<echo=TRUE>>=
+temp=tempfile()
+download.file("http://faculty.chicagobooth.edu/ruey.tsay/teaching/mtsbk/data-ch1.zip",temp)
+da=read.table(unz(temp, "Users/rst/Documents/backup/mts/y2012/data/ch1/m-pgspabt.txt"),header=T)
+n1=nrow(da)
+ra=log(da[,2:4]+1)
+t=1962+1:600/12
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=1\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=8>>=
+par(mfrow=c(3,1))
+plot(t,ra[,1],type="l",ylab=("lrt of PG"))
+plot(t,ra[,2],type="l",ylab=("lrt of Sp"))
+plot(t,ra[,3],type="l",ylab=("lrt of ABT"))
+@
+\label{fig:time series $z_{t}$}
+\end{center}
+\end{figure}
+
+
+\subsection{(b)}
+<<dd,echo=FALSE,results=hide>>=
+library(MTS)
+cc=ccm(ra)
+
+options(digits=2)
+a1=cc$ccm[,1]
+a1=matrix(a1,nrow=3,ncol=3,byrow=FALSE)
+a1
+
+a2=cc$ccm[,2]
+a2=matrix(a2,nrow=3,ncol=3,byrow=FALSE)
+a2
+
+a3=cc$ccm[,3]
+a3=matrix(a3,nrow=3,ncol=3,byrow=FALSE)
+a3
+@
+
+\begin{equation}
+\hat{\rho}_{0}=
+\left[
+\begin{matrix}
+\Sexpr{round(a1[1,1],2)} & \Sexpr{round(a1[1,2],2)} & \Sexpr{round(a1[1,3],2)} \\
+\Sexpr{round(a1[2,1],2)} & \Sexpr{round(a1[2,2],2)} & \Sexpr{round(a1[2,3],2)} \\
+\Sexpr{round(a1[3,1],2)} & \Sexpr{round(a1[3,2],2)} & \Sexpr{round(a1[3,3],2)}
+\end{matrix}
+\right],
+\hat{\rho}_{1}=
+\left[
+\begin{matrix}
+\Sexpr{round(a2[1,1],2)}& \Sexpr{round(a2[1,2],2)}&\Sexpr{round(a2[1,3],2)}\\
+\Sexpr{round(a2[2,1],2)}& \Sexpr{round(a2[2,2],2)}&\Sexpr{round(a2[2,3],2)}\\
+\Sexpr{round(a2[3,1],2)}&\Sexpr{round(a2[3,2],2)}&\Sexpr{round(a2[3,3],2)}
+\end{matrix}
+\right],
+\hat{\rho}_{2}=
+\left[
+\begin{matrix}
+\Sexpr{round(a3[1,1],2)}& \Sexpr{round(a3[1,2],2)}&\Sexpr{round(a3[1,3],2)}\\
+\Sexpr{round(a3[2,1],2)}& \Sexpr{round(a3[2,2],2)}&\Sexpr{round(a3[2,3],2)}\\
+\Sexpr{round(a3[3,1],2)}&\Sexpr{round(a3[3,2],2)}&\Sexpr{round(a3[3,3],2)}
+\end{matrix}
+\right]
+\end{equation}
+
+<<dd,echo=TRUE>>=
+library(MTS)
+cc=ccm(ra)
+
+options(digits=2)
+a1=cc$ccm[,1]
+a1=matrix(a1,nrow=3,ncol=3,byrow=FALSE)
+a1
+
+a2=cc$ccm[,2]
+a2=matrix(a2,nrow=3,ncol=3,byrow=FALSE)
+a2
+
+a3=cc$ccm[,3]
+a3=matrix(a3,nrow=3,ncol=3,byrow=FALSE)
+a3
+@
+
+\subsection{(c)}
+As we can see the point all above the line, so the statistic does not reject the null hypothesis of zero cross-correlations.
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=1\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=8>>=
+mq(ra,5)
+@
+\label{fig:p-value}
+\end{center}
+\end{figure}
+
+
+\end{document}

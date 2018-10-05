@@ -1,0 +1,196 @@
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.00.0.2552}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+%TCIDATA{Created=Thursday, December 30, 2010 11:10:39}
+%TCIDATA{LastRevised=Wednesday, March 07, 2012 10:38:10}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{Language=American English}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{lm}{Lemma}[section]
+\newtheorem{pro}{Proposition}[section]
+\newtheorem{defn}{Definition}[section]
+\newtheorem{rem}{Remark}[section]
+\numberwithin{equation}{section}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\textwidth =14.5cm \topmargin
+=-1.5cm \textheight =22.5cm \oddsidemargin=-10pt
+\parindent=0.8cm
+\renewcommand{\baselinestretch}{1.2}
+\usepackage{Sweave}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\input{hw8-concordance}
+
+\title{Hw8}
+\author{Peng Zhang}
+\date{\vspace{-5ex}}
+\maketitle
+
+
+\section{a-7-3}
+ \subsection{(a)}
+ 
+ 
+  \begin{table}[h]
+\centering
+\caption{Maximum likelihood estimates of the extreme value distrubution for daily log returns of Apple stock}
+\label{my-label}
+\begin{tabular}{cccc}
+\hline
+       Length of Subperiod       & Shape parameter $\xi $                   & Scale $\sigma  $                    & Location $\mu $                      \\
+\hline
+  &   Maximal negative returns & & \\
+\hline
+n=21 & 0.135(0.058)  & 1.719(0.126) & 3.380(0.168)  \\
+
+n=42 & 0.349(0.117)   & 1.595(0.198)  & 4.068(0.228) \\
+\hline
+
+\end{tabular}
+\end{table}
+
+ \subsection{(b)}
+ 
+ Since we get the $\xi, \sigma and\mu$,using the formula  to get the VaR and VaR$(10)$
+ \begin{equation}
+ VaR=\mu-\frac{\sigma}{\xi}\{1-[-n\ln(1-p)]^{-\xi}\}
+ \end{equation}
+ 
+ \begin{equation}
+ VaR(l)=l^{\xi}VaR
+ \end{equation}
+ 
+  \begin{table}[h]
+\centering
+\caption{VaR}
+\label{my-label}
+\begin{tabular}{ccccc}
+\hline
+       Length of Subperiod       & VaR$_{0.95}$                  &  VaR$_{0.99} $    & VaR$_{0.95}(10)$                  &  VaR$_{0.99}(10) $                \\
+\hline
+  &   Maximal negative returns & \\
+\hline
+n=21 &32528 & 63568& 44425&86818\\
+
+n=42 &29938 & 56735 &66849 & 126685\\
+\hline
+
+\end{tabular}
+\end{table}
+
+<<echo=TRUE>>=
+da=read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/d-aapl-0111.txt",header=T)
+pr=log(da$rtn+1)*100
+nr=-pr
+library(evir)
+options(digit=5)
+
+m3=gev(nr,block=21)
+m3$par.ests
+m3$par.ses
+t1=as.numeric(m3$par.ests)
+VaR1=t1[3]-t1[2]/t1[1]*(1-(-21*log(1-0.05))^{-t1[1]})
+VaR1=10000*VaR1
+VaR2=t1[3]-t1[2]/t1[1]*(1-(-21*log(1-0.01))^{-t1[1]})
+VaR2=10000*VaR2
+VaR3=10^{t1[1]}*VaR1
+VaR4=10^{t1[1]}*VaR2
+options(digits =5)
+VaR1
+VaR2
+VaR3
+VaR4
+
+m4=gev(nr,block=42)
+m4$par.ests
+m4$par.ses
+t1=as.numeric(m4$par.ests)
+VaR1=t1[3]-t1[2]/t1[1]*(1-(-42*log(1-0.05))^{-t1[1]})
+VaR1=10000*VaR1
+VaR2=t1[3]-t1[2]/t1[1]*(1-(-42*log(1-0.01))^{-t1[1]})
+VaR2=10000*VaR2
+VaR3=10^{t1[1]}*VaR1
+VaR4=10^{t1[1]}*VaR2
+VaR1
+VaR2
+VaR3
+VaR4
+VaR4
+
+
+
+@
+ 
+
+
+\section{a-7-4}
+
+\subsection{(a,b)}
+
+
+  \begin{table}[h]
+\centering
+\caption{POT method to calculate risk measures}
+\label{my-label}
+\begin{tabular}{cccccc}
+\hline
+       Threshold       &  $\xi$   &  $\sigma$   & $\mu$     &  VaR$_{0.99}$    &  ES$_{0.99}$   \\  
+\hline
+       $\eta=0.025$  &  0.102(0.044) & 0.013(0.002)  & -0.0047(0.003) & 69839 & 92434  \\
+
+\hline
+    $\eta=0.02$ &  0.089(0.040) & 0.013(0.001)& -0.0057(0.002) &70008 & 92008\\
+\hline
+\end{tabular}
+\end{table}
+
+<<echo=TRUE>>=
+da=read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/d-aapl-0111.txt",header=T)
+pr=log(da$rtn+1)
+nr=-pr
+m1=pot(nr,threshold=0.025)
+m1$par.ests
+m1$par.ses
+riskmeasures(m1,c(0.99))
+
+m1=pot(nr,threshold=0.02)
+m1$par.ests
+m1$par.ses
+riskmeasures(m1,c(0.99))
+@
+
+
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+\begin{Schunk}
+\begin{Sinput}
+
+>plot(m1)
+section:6
+\end{Sinput}
+\end{Schunk}
+\includegraphics{hw8-2}
+\caption{QQ-plot of the data versus exponential equantiles}
+\end{center}
+\end{figure}
+
+
+
+\subsection{(c)}
+From these results,we see that the risk measures are not too sensitive to the choices of threshold. The reason is that it is a stable return series. 
+
+
+
+
+\end{document}

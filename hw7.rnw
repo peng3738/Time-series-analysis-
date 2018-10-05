@@ -1,0 +1,237 @@
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.00.0.2552}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+%TCIDATA{Created=Thursday, December 30, 2010 11:10:39}
+%TCIDATA{LastRevised=Wednesday, March 07, 2012 10:38:10}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{Language=American English}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{lm}{Lemma}[section]
+\newtheorem{pro}{Proposition}[section]
+\newtheorem{defn}{Definition}[section]
+\newtheorem{rem}{Remark}[section]
+\numberwithin{equation}{section}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\textwidth =14.5cm \topmargin
+=-1.5cm \textheight =22.5cm \oddsidemargin=-10pt
+\parindent=0.8cm
+\renewcommand{\baselinestretch}{1.2}
+\usepackage{Sweave}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\input{hw7-concordance}
+
+\title{Hw7}
+\author{Peng Zhang}
+\maketitle
+
+\section{A-5-4}
+Minimum variance portfolio is to choose the weights $w_{t}$ that are the solution to the following simple optimization problem:
+\begin{center}
+ $\min\limits_{w}w^{T}V_{t}w$ ,such that $\sum\limits_{i=1}^{k} w_{i}=1$
+\end{center}
+The solution is 
+\begin{equation}
+w_{t}=\frac{V_{t}^{-1}I}{I^{'}V_{t}^{-1}I}
+\end{equation}
+By using the GARCH models, we could get the covariance matrix $V_{t}$.
+
+<<echo=TRUE>>=
+da=read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/d-a2a-0110.txt",header=T)
+aa=log(da$AA+1)
+axp=log(da$AXP+1)
+abt=log(da$ABT+1)
+lrtn=cbind(aa,axp,abt)
+source("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/GMVP.R")
+M2=GMVP(lrtn,start=2011)
+names(M2)
+wgt=M2$weights
+range(wgt)
+prtn=M2$returns
+mean(prtn)
+sqrt(var(prtn))
+Mean=apply(lrtn[2012:2515,],2,mean)
+Mean
+v1=sqrt(apply(lrtn[2012:2515,],2,var))
+print(v1)
+minV=sqrt(M2$minVariance)
+Vol=sqrt(M2$variances)
+range(minV,Vol)
+tdx=c(1:505)/2515+2009
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=4>>=
+plot(tdx,wgt[1,],xlab='year',ylab='weights',type='l',ylim=c(-0.75,1.5))
+lines(tdx,wgt[2,],lty=2)
+lines(tdx,wgt[3,],lty=3)
+@
+\caption{Weights of the minimum variance portfolio for three US stock returns ( Alcoa,American Express,and Abbott Laboratories) from Dec 29 2008 to Dec 31,2010,The solid,dashed and dotted lines are three stocks respectively}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=4>>=
+plot(tdx,Vol[,1],xlab='year',ylab='vol',type='l',ylim=c(0,0.1))
+lines(tdx,Vol[,2],lty=2)
+lines(tdx,Vol[,3],lty=3)
+lines(tdx,minV,lty=4)
+@
+\caption{Volatility of log returns for stocks of Alcoa,American Express,and Abbott Laboratories from Dec 29 2008 to Dec 31,2010.The solid,dashed, dotted and dot-dashed  lines are three stocks and portfolio respectively}
+\end{center}
+\end{figure}
+
+
+
+
+
+\section{A-5-5}
+By using GARCH(1,1) for the daily log returns, we get the model:
+\begin{equation}
+	r_{t}=2.415*10^{-3}+a_{t},a_{t}=\sigma_{t}\epsilon_{t},\epsilon\sim N(0,1)
+\end{equation}
+\begin{equation}
+	\sigma_{t}^{2}=9.408*10^{-6}+5.619*10^{-2}a_{t-1}^{2}+0.9319\sigma_{t-1}^{2}
+\end{equation}
+<<echo=TRUE>>=
+da=read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/d-a2a-0110.txt",header=T)
+aapl=log(da$AAPL+1)
+library(fGarch)
+m1=garchFit(~1+garch(1,1),data=aapl,trace=F)
+summary(m1)
+@
+Then using the model to predict 10 values, we get corresponding log returns and variances.By using the formula, 
+\begin{equation}
+	S({i})=e^{r_{i}}*S({i-1}),S(0)=350
+\end{equation}
+we get the stock prices for each trading days.
+
+<<echo=TRUE>>=
+p1=predict(m1,10)
+r1=p1$meanForecast
+d1=p1$standardDeviation
+s=350
+S=rep(1,1,10)
+for (i in 1:10)
+  {
+  if(i==1)
+   {S[i]=s*exp(r1[i])}
+   else{S[i]=S[i-1]*exp(r1[i])}
+  }
+S
+@
+Through using the European call option formula, we get the price is 3.555.
+European call option price:
+\begin{equation}
+	C=e^{-0.1/252}max(S(10)-355)
+\end{equation}
+\begin{equation}
+	S({i})=e^{r_{i}}*S({i-1}),S(0)=350
+\end{equation}
+<<echo=TRUE>>=
+C1=exp(-0.1/252)*max(S[10]-355,0)
+C1
+@
+
+Similary, we get the price of Asian call option is 0.
+Asian call option price:
+\begin{equation}
+	C(10)=e^{-0.1/252}max(A(0,10)-355,0)
+\end{equation}
+\begin{equation}
+	A(0,10)=\frac{1}{10}\sum\limits_{i=1}^{10}S({i})
+\end{equation}
+<<echo=TRUE>>=
+C2=exp(-0.1/252)*max(mean(S)-355,0)
+C2
+@
+
+\subsection{A-6-1}
+We know the mean and variance of $r_{t}$ is 0.02 and 0.04.And the probability of a trade happen is 1/2.
+\begin{equation}
+r_{t}^{0}=\begin{cases}
+	 0 & \text{with probability $\frac{1}{2}$}\\
+	 r_{t} & \text{with probability $\frac{1}{4}$}\\
+	 r_{t} &\text{with probability $\frac{1}{8}$}\\
+	 \cdots & \cdots \\
+	 \sum\limits_{i=0}^{k} & \text{with probability $\frac{1}{2^{k+2}}$}\\
+	 \cdots & \cdots
+\end{cases}
+\end{equation}
+
+Then we could get the mean and variance of $r_{t}^{0}$.
+\begin{equation}
+E(r_{t}^{0})=0.02;Var(r_{t}^{0})=0.0408.
+\end{equation}
+Meanwhile using the formula in the book ,we could get $r_{t}^{0}$ is serially correlated. And the first three lags of autocorrelations of $r_{t}^{0}$ is $-\frac{1}{204}, -\frac{1}{408}, -\frac{1}{816}$.
+\begin{equation}
+Cov(r_{t}^{0},r_{t-j}^{0})=-0.02*\frac{1}{2^{j}}
+\end{equation}
+\begin{equation}
+\rho_{i}(r_{t}^{0})=-\frac{1}{102*2^{j}}
+\end{equation}
+\begin{equation}
+\rho_{1}=-\frac{1}{204};\rho_{2}=-\frac{1}{408};\rho_{3}=-\frac{1}{816}
+\end{equation}
+    
+\subsection{A-6-7}]
+
+(a)\\
+By using the R scripts hfanal.R, we could get the histrogram of the returns.
+<<echo=TRUE>>=
+da=read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/taq-sbux-jul2011.txt",header=T)
+source("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/hfanal.R")
+m1=hfanal(da,5)
+lrt=m1$returns
+@
+
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=4>>=
+hist(lrt,breaks=50)
+@
+\caption{Histrogram of intraday 5-min log returns for Starbuscks from July 25 to July 29,2011}
+\end{center}
+\end{figure}
+\newpage
+(b)   \\
+Meanwhile,we could get the daily realized volatility 0.148, 0.184, 0.268, 0.329, 0.573.
+<<echo=TRUE>>=
+drv=m1$realized
+drv
+@
+
+(c)\\
+Through the R scripts hf2ts.R, we could easily get the realized volatility with the method of average estimator,0.174, 0.184, 0.260, 0.309, 0.510.
+<<echo=TRUE>>=
+source("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/hf2ts.R")
+m2=hf2ts(da,int=1)
+mRv=m2$ave.RV
+mRv
+@
+
+(d)\\
+Similarly, we could get the daily realized volatility of the stock with the method of two-scale estimator.The values is 0.173, 0.182, 0.254, 0.308, 0.504.
+<<echo=TRUE>>=
+Rv=m2$realized
+Rv
+@
+
+
+\end{document}

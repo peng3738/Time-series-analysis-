@@ -1,0 +1,369 @@
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.00.0.2552}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+%TCIDATA{Created=Thursday, December 30, 2010 11:10:39}
+%TCIDATA{LastRevised=Wednesday, March 07, 2012 10:38:10}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{Language=American English}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{lm}{Lemma}[section]
+\newtheorem{pro}{Proposition}[section]
+\newtheorem{defn}{Definition}[section]
+\newtheorem{rem}{Remark}[section]
+\numberwithin{equation}{section}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\textwidth =14.5cm \topmargin
+=-1.5cm \textheight =22.5cm \oddsidemargin=-10pt
+\parindent=0.8cm
+\renewcommand{\baselinestretch}{1.2}
+\usepackage{Sweave}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\input{hw10-concordance}
+
+\title{Hw10}
+\author{Peng Zhang}
+\date{\vspace{-5ex}}
+\maketitle
+
+\section{b-2-2}
+\subsection{VAR(4) model}
+
+The model is 
+\[z_{t}=\left[
+\begin{array}{c}
+0.15\\
+0.08\\
+0.24
+\end{array}
+\right]
++
+\left[
+\begin{array}{ccc}
+0.52 &0.07 & 0.06\\
+0.38 &0.32 &0.41\\
+ 0.52 &0.17 &0.15\\
+\end{array}
+\right]z_{t-1}
++
+\left[
+\begin{array}{ccc}
+-0.05 & 0.16 &-0\\
+ -0.17 &-0.25 &0.06\\
+ -0.22 &-0.16 &0.23
+\end{array}
+\right]
+z_{t-2}
+$ \par $
++
+\left[
+\begin{array}{ccc}
+0.05 &-0.28 &0.14\\
+ 0.10 &0.12 &0.01\\
+ 0.05 &-0.08 &0.07
+\end{array}
+\right]
+z_{t-3}
++
+\left[
+\begin{array}{ccc}
+0.04 &0.26& -0.25\\
+ 0.07& -0.09& -0.10\\
+ 0.15 &-0.15&-0.05\\
+\end{array}
+\right]
+z_{t-4}
++a_{t}
+\]
+
+<<echo=TRUE>>=
+temp=tempfile()
+download.file("http://faculty.chicagobooth.edu/ruey.tsay/teaching/mtsbk/data-ch2.zip",temp)
+da=read.table(unz(temp, "Users/rst/Documents/backup/mts/y2012/data/ch2/q-gdp-ukcaus.txt"),header=T)
+gdp=log(da[,3:5])
+dim(gdp)
+z=100*(gdp[2:126,]-gdp[1:125,])
+library(MTS)
+m3=VAR(z,4)
+@
+
+
+\subsection{Simplify VAR(4) model}
+The simplified VAR(4) model can be written as
+\[z_{t}=\left[
+\begin{array}{c}
+0.2 \\ 0 \\ 0.32\\
+\end{array}
+\right]
++
+\left[
+\begin{array}{ccc}
+0.57 &0& 0\\
+ 0.38& 0.30& 0.41\\
+ 0.51 &0.27& 0
+\end{array}
+\right]z_{t-1}
++
+\left[
+\begin{array}{ccc}
+0 &0.28& 0\\
+0 &-0.15& 0\\
+0 &0 & 0
+\end{array}
+\right]
+z_{t-2}
+$ \par $
++
+\left[
+\begin{array}{ccc}
+0 &-0.25& 0\\
+0& 0 &0\\
+0 &0 &0
+\end{array}
+\right]
+z_{t-3}
++
+\left[
+\begin{array}{ccc}
+0& 0.30& -0.24\\
+0 &0 &0\\
+0 &-0.20 &0
+\end{array}
+\right]
+z_{t-4}
++a_{t}
+\]
+<<echo=TRUE>>=
+options(digits=2)
+m4=refVAR(m3,thres=1.96)
+@
+
+
+
+\subsection{Model check}
+We can see all the p-valuse are more than 0.05. So the model is adequate.
+
+<<echo=TRUE,fig=TRUE>>=
+MTSdiag(m4,adj=12)
+@
+\newpage
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+\includegraphics{hw10-1}
+\caption{p-values of the $Q_{k}(m)$ atatistics appllied to the residuals of the simplied VAR(4) model}
+\end{center}
+\end{figure}
+
+\subsection{Comparing}
+Let's  comparing the model VAR(2).
+Here we could compare the p-value,the VAR(2) model have a point below the 0.05 line,but VAR(4) are not. We also could compare through AIC,BIC and HQ values.All of values in  VAR(4) are smaller than VAR(2). So we can say, simplified VAR(4) is better than simplified VAR(2).
+
+<<echo=TRUE>>=
+m1=VAR(z,2)
+m2=refVAR(m1,thres=1.96)
+MTSdiag(m2,adj=12)
+@
+
+\newpage
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+\includegraphics{hw10-2}
+\caption{p-values of the $Q_{k}(m)$ atatistics appllied to the residuals of the simplied VAR(2) model}
+\end{center}
+\end{figure}
+\newpage
+
+\section{b-2-3}
+\subsection{$z_{t}$ graph}
+<<echo=TRUE>>=
+temp=tempfile()
+download.file("http://faculty.chicagobooth.edu/ruey.tsay/teaching/mtsbk/data-ch2.zip",temp)
+da=read.table(unz(temp, "Users/rst/Documents/backup/mts/y2012/data/ch2/m-cpitb3m.txt"),header=T)
+dim(da)
+z1=da$tb3m[1:791]
+z2=100*(log(da$cpiaucsl[2:792])-log(da$cpiaucsl[1:791]))
+Z=cbind(z1,z2)
+t=1:791/12+1947
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<echo=FALSE,fig=TRUE,width=16,height=8>>=
+plot(t,z1,type='l',col="red")
+lines(t,z2,type="l",col="green")
+@
+\caption{Time series of $z_{t}$, change in monthly US treasury bills line is red, the line of inflation rate of CPI is green }
+\end{center}
+\end{figure}
+\newpage
+\subsection{Choose the order by BIC criterion}
+We can see the best oder choosing throgh BIC criterion is 3. So we are using VAR(3) model.
+<<echo=TRUE>>=
+library(MTS)
+m1=VARorder(Z)
+@
+\subsection{VAR(3) model and fitted VAR(3) model}
+Here is the VAR(3) model.
+\[z_{t}=\left[
+\begin{array}{c}
+0.03 \\0.04 
+\end{array}
+\right]
++
+\left[
+\begin{array}{cc}
+ 1.39& 0.13 \\
+0.09 & 0.45
+\end{array}
+\right]z_{t-1}
++
+\left[
+\begin{array}{cc}
+-0.61& 0.06\\
+-0.08& 0.02
+\end{array}
+\right]z_{t-2}
++
+\left[
+\begin{array}{cc}
+ 0.21 &-0.09\\
+ 0.01& 0.11
+\end{array}
+\right]z_{t-3}
++a_{t}
+\]
+And the fitted VAR(3) model is 
+\[z_{t}=\left[
+\begin{array}{c}
+0 \\ 0.04 
+\end{array}
+\right]
++
+\left[
+\begin{array}{cc}
+ 1.39& 0.14\\
+ 0.08& 0.46
+\end{array}
+\right]z_{t-1}
++
+\left[
+\begin{array}{cc}
+ -0.61&    0\\
+-0.07&    0
+\end{array}
+\right]z_{t-2}
++
+\left[
+\begin{array}{cc}
+0.21& 0\\
+0& 0.12
+\end{array}
+\right]z_{t-3}
++a_{t}
+\]
+
+<<echo=TRUE>>=
+options(digits=2)
+m2=VAR(Z,3)
+@
+<<echo=TRUE>>=
+m3=refVAR(m2,thres=1.65)
+@
+\subsection{check the model}
+We can find this model is not adequate.Since most p-value is below the 0.05 line.That means the residuals have great dependent.
+<<echo=TRUE>>=
+MTSdiag(m3,adj=12)
+@
+
+\newpage
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+\includegraphics{hw10-3}
+\caption{p-values of the $Q_{k}(m)$ atatistics appllied to the residuals of the simplied VAR(3) model}
+\end{center}
+\end{figure}
+\newpage
+\subsection{Impulse response functions}
+The upper-left plot shows that there is a delayed effect on the US treasury bill if one changeed the US treasury bill by 1.The upper two plots does not decay to 0 quickly.
+<<echo=TRUE>>=
+Phi=m3$Phi
+Sig=m3$Sigma
+@
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<fig=TRUE>>=
+VARirf(Phi,Sig)
+@
+\caption{Impulse response function of the simplified VAR(3)}
+\end{center}
+\end{figure}
+\newpage
+
+\subsection{Cholesky decomposition and transformed innovations}
+Since $a_{t}$ is the residual matrix,we find the covariance matrix and the Cholesky decomposition matrix are
+\[
+Cov(a_{t})=\left[
+\begin{array}{cc}
+0.14 &0.01\\
+ 0.01 &0.07
+\end{array}
+\right]
+\]
+
+\[
+U=\left[
+\begin{array}{cc}
+ 0.4 &0.03\\
+  0.0 &0.27
+\end{array}
+\right]
+\]
+So we could see
+
+\begin{equation}
+Cov(a_{t})=U^{'}U
+\end{equation}
+And the transformed innovations are $ \eta_{t}=(U^{'})^{-1}a_{t}$
+
+<<echo=TRUE>>=
+Resi=t(m3$residuals) 
+Cov=cov(t(Resi))
+Cov
+dd=t(chol(Cov))
+dd
+@
+
+<<echo=TRUE>>=
+ent=solve(dd)%*%Resi
+t1=4:791/12+1947
+@
+
+
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<fig=TRUE>>=
+plot(t1,ent[1,],type='l',col="red")
+lines(t1,ent[2,],lty=2,col="green")
+@
+\caption{The transformed innovations plot }
+\end{center}
+\end{figure}
+\newpage
+\end{document}

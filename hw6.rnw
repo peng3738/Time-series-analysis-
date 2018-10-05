@@ -1,0 +1,166 @@
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.00.0.2552}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+%TCIDATA{Created=Thursday, December 30, 2010 11:10:39}
+%TCIDATA{LastRevised=Wednesday, March 07, 2012 10:38:10}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{Language=American English}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{lm}{Lemma}[section]
+\newtheorem{pro}{Proposition}[section]
+\newtheorem{defn}{Definition}[section]
+\newtheorem{rem}{Remark}[section]
+\numberwithin{equation}{section}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\textwidth =14.5cm \topmargin
+=-1.5cm \textheight =22.5cm \oddsidemargin=-10pt
+\parindent=0.8cm
+\renewcommand{\baselinestretch}{1.2}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{hw6}
+\author{peng zhang}
+\maketitle
+
+\section{A-5-2}
+
+Considering the daily log return of Aboratories stock,we use out-of-sample forecasts to compute $\sigma_{t}^{2}(l)$ for h=1,5,\dots,40 and t from 2011 to 2515.
+\begin{equation}
+	\sigma_{t,h}^{2}=\sum\limits_{l=1}^{h}\sigma_{t}^{2}(l)
+\end{equation}
+where $\sigma_{t,h}^{2}$ denote the conditional variance of the h-period log return $r_{t,h}$ at the forecast origin t.
+The annualized h-period volatility 
+\begin{equation}
+	\sigma_{t,h,a}=\sqrt{\frac{252}{h}}\sigma_{t,h}
+\end{equation}
+where the subscript "a" is used to signigy that the volatility is annualized. We are trying to use it to study the volatility term structure.
+\par
+
+<<echo=TRUE>>=
+temp <- tempfile()
+download.file("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/ch5data.zip",temp)
+da <- read.table(unz(temp, "d-a2a-0110.txt"),header=T)
+unlink(temp)
+lrt=log(da$ABT+1)
+length(lrt)
+tdx=c(1:2515)/252+2001
+tdx1=c(1:2010)/252+2001
+tdx2=c(2011:2515)/252+2001
+library(fGarch)
+m1=garchFit(~1+garch(1,1),data=lrt,trace=F)
+summary(m1)
+vall=sqrt(252)*volatility(m1)
+t1=matrix(0,nrow=505,ncol=8)
+for(i in 1:505){
+                mm1=garchFit(~1+garch(1,1),data=lrt[1:2009+i],trace=F) 
+                t1[i,1]=sqrt(252)*predict(mm1,1)$standardDeviation
+                
+                for (j in 2:8)
+                {
+                  t1[i,j]=sqrt(252/(5*(j-1))*sum((predict(mm1,5*(j-1))$standardDeviation)^2))
+                }
+                } 
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=4>>=
+plot(tdx,vall,xlab='year',ylab='volatility','l')
+@
+\caption{Volatility of log returns for stocks of Abbott Laboratories}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=4>>=
+plot(tdx2,t1[,1],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol')
+par(new=TRUE)
+plot(tdx2,t1[,2],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol',lty=2,lwd=2)
+par(new=TRUE)
+plot(tdx2,t1[,3],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol',lty=3,lwd=2)
+par(new=TRUE)
+plot(tdx2,t1[,4],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol',lty=4,lwd=2)
+par(new=TRUE)
+plot(tdx2,t1[,5],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol',lty=5,lwd=2)
+par(new=TRUE)
+plot(tdx2,t1[,6],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol',lty=6,lwd=2)
+par(new=TRUE)
+plot(tdx2,t1[,7],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol',lty=7,lwd=2)
+par(new=TRUE)
+plot(tdx2,t1[,8],'l',ylim=c(0,0.5),xlab='year',ylab='Annualized Vol',lty=8,lwd=2)
+@
+\caption{Volatility term structure for daily log returns of Abbott Laboratories stock from Jan 2,2001 to Dec 31,2010}
+\end{center}
+\end{figure}
+
+\newpage
+
+\section{A-5-3}
+The CAPM model can be written as
+\begin{equation}
+r_{t}=\alpha +\beta r_{m,t}+e_{t}
+\end{equation}
+where $r_{m,t}$ denotes the return of the market and $r_{t}$ is the asset return of interest.
+\begin{equation}
+	\beta=\frac{Cov(r_{t},r_{m,t})}{Var(r_{m,t})}
+\end{equation}
+And we have 
+\begin{equation}
+	Cov(r_{t},r_{m,t})=\frac{Var(r_{t}+r_{m,t})-Var(r_{t}-r_{m,t})}{4}
+\end{equation}
+To demonstrate this, we consider the daily log returns of Abbott Laboratories stock from Jan 2,2001 to Dec 31,2010. we use the daily log returns of the $ S\&P $ 500 index as the market returns. The traditional CAPM model for the data is 
+\begin{equation}
+	r_{t}=8.035*10^{-5} +0.533r_{m,t}+e_{t}
+\end{equation}
+
+
+<<echo=TRUE>>=
+da = read.table("http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/d-abtsp-0110.txt",header=T)
+lrt=log(da$abt+1)
+sp5=da[,3]
+xp=lrt+sp5
+xm=lrt-sp5
+m1=garchFit(~1+garch(1,1),data=xp,trace=F)
+summary(m1)
+
+m2=garchFit(~1+garch(1,1),data=xm,trace=F)
+summary(m2)
+
+m3=garchFit(~1+garch(1,1),data=sp5,trace=F)
+summary(m3)
+
+vxp=volatility(m1)
+vxm=volatility(m2)
+vsp5=volatility(m3)
+beta=(vxp^2-vxm^2)/(4*vsp5^2)
+tdx=c(1:2515)/252+2001
+m4=lm(lrt~sp5)
+summary(m4)
+@
+
+\begin{figure}[htbp]
+\begin{center}
+\setkeys{Gin}{width=\textwidth}
+<<echo=TRUE,fig=TRUE,width=8,height=4>>=
+plot(tdx,beta,xlab='year',ylab='beta ',type='l')
+abline(h=c(0.533))
+@
+\caption{Time-varying betas for the daily log returns of Abbott Laboeatories stock from Jan 2,2001 to Dec 31,2010.The daily log returns of the S&P 500 index is used as the market returns. The horizontal line denotes the constant beta at 0.533}
+\end{center}
+\end{figure}
+
+\end{document}
